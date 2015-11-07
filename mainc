@@ -1,0 +1,61 @@
+#include <EmonLib.h>
+
+//#include "EmonLib.h"                   // Include Emon Library
+EnergyMonitor emon1;                   // Create an instance
+ 
+//Tensao da rede eletrica
+double rede = 220.0;
+double potenciaW;
+double custoEnergia;
+//double segundosHora = 0.000277778;
+double Hora = 1;
+double reaisKwh = 0.444360;
+double custoTotal = 0;
+double totalHoras = 0;
+ 
+//Pino do sensor SCT
+int pino_sct = 1;
+ 
+void setup() 
+{
+  Serial.begin(9600);   
+  //Pino, calibracao - Cur Const= Ratio/BurdenR. 1800/62 = 29. 
+  emon1.current(pino_sct, 29);
+} 
+  
+void loop() 
+{ 
+  //Calcula a corrente  
+  double Irms = emon1.calcIrms(1480);
+  //Mostra o valor da corrente
+  Serial.print("Corrente (Irms): ");
+  Serial.print(Irms); // Irms
+   
+  //Calcula e mostra o valor da potencia
+  Serial.print(" Potencia (Irms * 220v) : ");
+  Serial.println(Irms*rede);
+
+  // Consumo mensal = P x t = 4572W x 15,00h = 68580 Wh (68,58 KWh) 
+  // Custo de energia = 68,58 KWh x 0,61 R$/KWh = R$ 41,68 por mês.
+
+  Serial.println("");
+
+  Serial.println("Calculo (Potencia * 3200,00h) * 0,61 : ");
+  potenciaW = Irms*rede;
+  custoEnergia = ((potenciaW * Hora) / 1000) *  reaisKwh;
+
+  custoTotal = custoTotal + custoEnergia;
+  
+  Serial.print("R$: ");
+  Serial.println(custoEnergia);
+
+  Serial.println("Total de horas:  ");
+  totalHoras = totalHoras + 1;
+  Serial.println(totalHoras);
+  
+  Serial.println("Total de energia /h: ");
+  Serial.print("R$: ");
+  Serial.println(custoTotal);
+   
+  delay(1000);
+}
